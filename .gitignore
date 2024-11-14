@@ -1,5 +1,6 @@
 *.dat
 *.dat.gz
+*.dat.zip
 INP/
 ._*
 _*

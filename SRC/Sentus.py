@@ -39,7 +39,7 @@ from InputOutput import readSatApo
 from InputOutput import readSatClk
 from InputOutput import readSatBia
 from InputOutput import ObsIdxP
-from InputOutput import generateCorrFile, generatePvtFile
+from InputOutput import generateCorrFile, generatePvtFile, generatePerfFile
 from InputOutput import PreproHdr, CorrHdr, PvtHdr, PerfHdr
 from InputOutput import CSNEPOCHS, CSNPOINTS
 from Preprocessing import runPreprocessing
@@ -50,6 +50,7 @@ from Corrections import runCorrectMeas
 from CorrectionsPlots import generateCorrPlots
 from Pvts import computeWlsqSolution
 from PosPlots import generatePvtsPlots
+from Perf import initializePerfInfo, computeFinalPerf
 
 #----------------------------------------------------------------------
 # INTERNAL FUNCTIONS
@@ -189,7 +190,7 @@ for Jd in range(Conf["INI_DATE_JD"], Conf["END_DATE_JD"] + 1):
         # Create output file
         fpvt = createOutputFile(PvtObsFile, PvtHdr)
 
-     # If PERF outputs are activated
+    # If PERF outputs are activated
     if Conf["PERF_OUT"] == 1:
         # Define the full path and name to the output PERF file
         PerfObsFile = Scen + \
@@ -198,6 +199,8 @@ for Jd in range(Conf["INI_DATE_JD"], Conf["END_DATE_JD"] + 1):
 
         # Create output file
         fperf = createOutputFile(PerfObsFile, PerfHdr)
+        # Initialize Perf dictionary
+        PerfInfoObs = initializePerfInfo(Conf)
         
     # Initialize Variables
     EndOfFile = False
@@ -297,21 +300,16 @@ for Jd in range(Conf["INI_DATE_JD"], Conf["END_DATE_JD"] + 1):
                         # Generate output file
                         generateCorrFile(fcorr, CorrInfo)
 
-                    # TODO execute PVTs
                     # Compute PVT solution
                     # ----------------------------------------------------------
-                    PosInfo = computeWlsqSolution(CorrInfo, Conf, Sod, RcvrRefPosXyz, RcvrRefPosLlh)
+                    PosInfo = computeWlsqSolution(CorrInfo, Conf, Sod, RcvrRefPosLlh, PerfInfoObs)
 
                     # If PVTs outputs are requested
                     if Conf["PVT_OUT"] == 1:
                         # Generate output file
                         generatePvtFile(fpvt, PosInfo)
 
-                    # TODO execute Perf
-                    # If Perf outputs are requested
-                    # if Conf["PERF_OUT"] == 1:
-                    #     # Generate output file
-                    #     generatePerfFile(fperf, PosInfo)
+    
 
     # If PREPRO outputs are requested
     if Conf["PREPRO_OUT"] == 1:
@@ -337,6 +335,7 @@ for Jd in range(Conf["INI_DATE_JD"], Conf["END_DATE_JD"] + 1):
         # Generate Corrected plots
         generateCorrPlots(CorrObsFile)
     
+    # If PVT outputs are requested
     if Conf["PVT_OUT"] == 1:
         fpvt.close()
 
@@ -347,7 +346,12 @@ for Jd in range(Conf["INI_DATE_JD"], Conf["END_DATE_JD"] + 1):
         # Generate Pos plots
         generatePvtsPlots(PvtObsFile)
 
-    # TODO Execute PERF plots
+    # If PVT outputs are requested 
+    if Conf["PERF_OUT"] == 1:
+        # Compute Performances
+        finalPerf = computeFinalPerf(PerfInfoObs)
+        # Generate output file
+        generatePerfFile(fperf, finalPerf)
 
 # End of JD loop
 

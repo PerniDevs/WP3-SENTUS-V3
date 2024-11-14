@@ -254,10 +254,10 @@ PvtIdx["VDOP"]=15
 PvtIdx["PDOP"]=16
 
 PerfHdr = "\
-#RCVR    SAMPLES     SAMNOSOL     NSVMIN     NSVMAX     HPERMS[m]    VPERMS[m]     HPE95[m]      VPE95[m]      HPEMAX[m]     VPEMAX[m]      PDOPMAX    HDOPMAX     VDOPMAX\n"
+#RCVR SAMPS NOSOL NSVMIN NSVMAX     HPERMS     VPERMS      HPE95      VPE95     HPEMAX     VPEMAX   PDOPMAX    HDOPMAX    VDOPMAX\n"
 
 # Line format
-PerfFmt = "%4s %5d %5d %3d %3d %10.3 %10.3 %10.3 %10.3 %10.3 %10.3 %10.3 %10.3 %10.3".split()
+PerfFmt = "%4s %5d %5d %5d %5d %10.3f %10.3f %10.3f %10.3f %10.3f %10.3f %10.3f %10.3f %10.3f".split()
 
 # File columns
 PerfIdx = OrderedDict({})
@@ -985,12 +985,10 @@ def generatePreproFile(fpreprobs, PreproObsInfo):
         # Outputs["GEOMFREE"] = SatPreproObs["GeomFree_P"]
 
         # Write line
-        # Write line
         for i, result in enumerate(Outputs):
             fpreprobs.write(((PreproFmt[i] + " ") % Outputs[result]))
         fpreprobs.write("\n")
 
-# End of generatePreproFile
 
 def generateCorrFile(fcorr, CorrInfo):
 
@@ -1049,6 +1047,7 @@ def generateCorrFile(fcorr, CorrInfo):
             fcorr.write(((CorrFmt[i] + " ") % Outputs[result]))
         fcorr.write("\n")
         
+
 def generatePvtFile(fpvt, PosInfo):
 
     # Purpose: generate output file with PVT results
@@ -1089,12 +1088,44 @@ def generatePvtFile(fpvt, PosInfo):
     for i, result in enumerate(Outputs):
             fpvt.write(((PvtFmt[i] + " ") % Outputs[result]))
     fpvt.write("\n")
-    # for i, result in enumerate(Outputs):
-    #     fpvt.write(PvtFmt[i] % Outputs[result])
-    # fpvt.write("\n")
-    # Debug print to check values and line formatting
-    # print("Outputs:", Outputs)
-    # print("Generated Line:", " ".join(PvtFmt[i] % Outputs[result] for i, result in enumerate(Outputs)))
+
+
+def generatePerfFile(fperf, PerfInfo):
+    # Purpose: generate output file with PVT results
+
+    # Parameters
+    # ==========
+    # fpvt: file descriptor
+    #         Descriptor for PVT OBS output file
+    # PosInfo: dict
+    #         Dictionary containing Pos info for the 
+    #         current epoch
+
+    # Returns
+    # =======
+    # Nothing
+
+    # Prepare outputs
+    Outputs = OrderedDict({})
+    Outputs["RCVR"] = PerfInfo["Rcvr"]
+    Outputs["SAMPLES"] = PerfInfo["Samples"]
+    Outputs["SAMNOSOL"] = PerfInfo["SamNoSol"]
+    Outputs["NSVMIN"] = PerfInfo["Nsvmin"]
+    Outputs["NSVMAX"] = PerfInfo["Nsvmax"]
+    Outputs["HPERMS"] = PerfInfo["Hperms"]
+    Outputs["VPERMS"] = PerfInfo["Vperms"]
+    Outputs["HPE95"] = PerfInfo["Hpe95"]
+    Outputs["VPE95"] = PerfInfo["Vpe95"]
+    Outputs["HPEMAX"] = PerfInfo["HpeMax"]
+    Outputs["VPEMAX"] = PerfInfo["VpeMax"]
+    Outputs["PDOPMAX"] = PerfInfo["PdopMax"]
+    Outputs["HDOPMAX"] = PerfInfo["HdopMax"]
+    Outputs["VDOPMAX"] = PerfInfo["VdopMax"]
+
+    # Write line
+    for i, result in enumerate(Outputs):
+            fperf.write(((PerfFmt[i] + " ") % Outputs[result]))
+    fperf.write("\n")
 
 
 def openInputFile(Path):

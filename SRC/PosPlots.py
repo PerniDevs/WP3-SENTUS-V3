@@ -323,7 +323,8 @@ def plotENU(PvtObsFile, PvtsObsData):
 
     generatePlot(PlotConf)
 
-def plotHVPE(PvtObsFile, PvtsObsData):
+
+def plotEPEvsNPE(PvtObsFile, PvtsObsData):
     PlotTitle = "Horizontal position Error vs DOP"
     PlotLabel = "EPE_VS_NPE"
     PlotConf = {
@@ -361,6 +362,47 @@ def plotHVPE(PvtObsFile, PvtsObsData):
 
          "zData": {
             0: PvtsObsData[PvtIdx["HDOP"]],
+        },
+
+    }
+
+    PlotConf = initPlot(PvtObsFile, PlotConf, PlotTitle, PlotLabel, xLabelRequired=True)
+
+    generatePlot(PlotConf)
+
+
+def plotHVPE(PvtObsFile, PvtsObsData):
+    PlotTitle = "Horizontal and Vertical Postion Errors"
+    PlotLabel = "HV_PE"
+    PlotConf = {
+        "Type": "Lines",
+        "FigSize" : (14.4, 10.6),
+
+        "xLabel" : "Hour of DoY 011",
+
+        "xTicks": range(round(PvtsObsData[PvtIdx["SOD"]].min() / GnssConstants.S_IN_H), round(PvtsObsData[PvtIdx["SOD"]].max() / GnssConstants.S_IN_H) + 1),
+        "xLim" : [round(PvtsObsData[PvtIdx["SOD"]].min() / GnssConstants.S_IN_H), round(PvtsObsData[PvtIdx["SOD"]].max() / GnssConstants.S_IN_H)],
+
+        "yLabel": "East North Up Postion Errors [m]",
+
+        "Grid" : 1,
+        "c" : {0: "green", 1: "red"},
+        "Marker" : ".",
+        "LineWidth" : 1,
+        "LineStyle": "",
+        "s": 1,
+
+        "Label" : {0: "VPE", 1: "HPE"},
+        "LabelLoc" : "best",
+        
+        "xData": {
+            0: PvtsObsData[PvtIdx["SOD"]] / GnssConstants.S_IN_H,
+            1: PvtsObsData[PvtIdx["SOD"]] / GnssConstants.S_IN_H,
+        },
+
+        "yData": {
+            0: PvtsObsData[PvtIdx["VPE"]],
+            1: PvtsObsData[PvtIdx["HPE"]],
         },
 
     }
@@ -455,11 +497,23 @@ def generatePvtsPlots(PvtObsFile):
     plotENU(PvtObsFile, PvtsObsData)
 
 
-    # HVPE
+    # EPE vs NPE
     # ----------------------------------------------------------
     # Read the cols we need from PVT file
     PvtsObsData = read_csv(PvtObsFile, delim_whitespace=True, skiprows=1, header=None,\
     usecols=[PvtIdx["EPE"], PvtIdx["NPE"], PvtIdx["HDOP"]])
+    
+    print('INFO: Plot EPE vs NPE...')
+
+    # Configure plot and call plot generation function
+    plotEPEvsNPE(PvtObsFile, PvtsObsData)
+
+
+    # HVPE
+    # ----------------------------------------------------------
+    # Read the cols we need from PVT file
+    PvtsObsData = read_csv(PvtObsFile, delim_whitespace=True, skiprows=1, header=None,\
+    usecols=[PvtIdx["SOD"], PvtIdx["HPE"], PvtIdx["VPE"]])
     
     print('INFO: Plot HVPE...')
 

@@ -22,8 +22,9 @@ import numpy as np
 from collections import OrderedDict
 from COMMON import GnssConstants as Const
 from COMMON.Wlsq import computeDops, computeS, buildGmatrix, buildWmatrix, runWlsqIteration
+from Perf import updatePerfEpoch
 
-def computeWlsqSolution(CorrInfo, Conf, Sod, RcvrRefPosXyz, RcvrRefPosLlh):
+def computeWlsqSolution(CorrInfo, Conf, Sod, RcvrRefPosLlh, PerfInfoObs):
     '''
         Purpose: 
             To compute a WLSQ solution
@@ -160,7 +161,7 @@ def computeWlsqSolution(CorrInfo, Conf, Sod, RcvrRefPosXyz, RcvrRefPosLlh):
                 NPE += resENU[1]
                 UPE += resENU[2]
 
-            #Update dictionary
+            #Update PVT dictionary
             PosInfoObs["Lon"] = RcvrPosClk[0]
             PosInfoObs["Lat"] = RcvrPosClk[1]
             PosInfoObs["Alt"] = RcvrPosClk[2]
@@ -175,13 +176,18 @@ def computeWlsqSolution(CorrInfo, Conf, Sod, RcvrRefPosXyz, RcvrRefPosLlh):
             PosInfoObs["Vdop"] = VDOP
             PosInfoObs["Pdop"] = PDOP
             PosInfoObs["Sol"] = 1
+
+            # Update Performance Intermediatee Information
+            PerfInfoObs = updatePerfEpoch(EPE, NPE, UPE, GDOP, PDOP, TDOP, HDOP, VDOP, PosInfoObs["Hpe"], PosInfoObs["Vpe"], PosInfoObs["NumSat"], PerfInfoObs)
         
         else:
             PosInfoObs["Sol"] = 0
+            PerfInfoObs["SamNoSol"] += 1
     
     else:
         PosInfoObs["Sol"] = 0
+        PerfInfoObs["SamNoSol"] += 1
 
     PosInfo = PosInfoObs
 
-    return PosInfo
+    return PosInfo, PerfInfoObs
